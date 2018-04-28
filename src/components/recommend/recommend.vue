@@ -9,26 +9,38 @@
           </div>
         </slider>
       </div>
-      <div>
+      <div class="recommend-list">
         <h1 class="list-title">热门歌单推荐</h1>
+        <ul>
+          <li v-for="item in discList" class="item">
+            <div class="icon">
+              <img :src="item.imgurl" width="60" height="60" alt="">
+            </div>
+            <div class="text">
+              <h2 class="name" v-html="item.creator.name"></h2>
+              <p class="desc" v-html="item.dissname"></p>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
 </template>
 
 <script>
-  import {getRecommend, getSongList} from "api/recommend";
+  import {getRecommend, getDiscList} from "api/recommend";
   import {ERR_OK} from "api/config";
   import Slider from "base/slider/slider";
 
   export default {
     data() {
       return {
-        recommends: []
+        recommends: [],
+        discList: []
       }
     },
     created() {
       this._getRecommend()
-      this._getSongList()
+      this._getDiscList()
     },
     methods: {
       _getRecommend() {
@@ -38,9 +50,11 @@
           }
         })
       },
-      _getSongList() {
-        getSongList(1).then((resp) => {
-          console.log(resp)
+      _getDiscList() {
+        getDiscList().then((res) => {
+          if (res.code ==- ERR_OK) {
+            this.discList = res.data.list
+          }
         })
       }
     },
@@ -51,6 +65,10 @@
 </script>
 
 <style scoped>
+  ul,li{
+    padding: 0;
+    margin: 0;
+  }
   .recommend{
     position: fixed;
     width: 100%;
@@ -66,10 +84,39 @@
     width: 100%;
     overflow: hidden;
   }
-  .list-title{
+  .recommend-list .list-title{
     color: yellow;
     text-align: center;
     font: bold 17px/20px '微软雅黑';
   }
+  .recommend-list .item{
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+    padding: 0 20px 20px 20px;
+  }
+  .recommend-list .icon{
+    flex: 0 0 60px;
+    width: 60px;
+    padding-right: 20px;
+  }
+  .recommend-list .text{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    line-height: 20px;
+    overflow: hidden;
+    font-size: 13px
+  }
+  .recommend-list .name{
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #fefefe
+  }
+  .recommend-list .desc{
+    color: #ddd
+  }
+
 
 </style>

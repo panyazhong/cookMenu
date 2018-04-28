@@ -3,6 +3,9 @@
       <div class="slider-group" ref="sliderGroup">
         <slot></slot>
       </div>
+      <div class="dots">
+        <span class="dot" :class="{active: currentIndex === index}" v-for="(item, index) in dots"></span>
+      </div>
     </div>
 </template>
 
@@ -12,6 +15,12 @@
 
   export default {
     name: "slider",
+    data() {
+      return {
+        dots: [],
+        currentIndex: 0
+      }
+    },
     props: {
       loop: {
         type: Boolean,
@@ -29,8 +38,21 @@
     mounted() {
       setTimeout(() => {
         this._setSliderWidth()
+        this._initDots()
         this._initSlider()
+
+        if(this.autoPlay) {
+          this._play()
+        }
       }, 20)
+
+      window.addEventListener('resize', () => {
+        if (!this.slider) {
+          return
+        }
+        this._setSliderWidth(true)
+        this.slider.refresh()
+      })
     },
     methods: {
       _initSlider() {
@@ -43,24 +65,51 @@
           snapThreshold: 0.3,
           snapSpeed: 400
         })
+
+        this.slider.on('scrollEnd', () => {
+          let pageIndex = this.slider.getCurrentPage().pageX
+          if (this.loop) {
+            pageIndex -= 1
+          }
+          this.currentIndex = pageIndex
+
+          if (this.autoPlay) {
+            clearInterval(this.timer)
+            this._play()
+          }
+        })
       },
-      _setSliderWidth() {
-        let children = this.$refs.sliderGroup.children
+      _initDots() {
+        this.dots = new Array(this.children.length)
+      },
+      _setSliderWidth(isResize) {
+        this.children = this.$refs.sliderGroup.children
         let sliderWidth = this.$refs.slider.clientWidth
         let width = 0
-        for (let i = 0; i < children.length; i++) {
-          let child = children[i]
+        for (let i = 0; i < this.children.length; i++) {
+          let child = this.children[i]
           addClass(child, 'slider-item')
           child.style.width = sliderWidth + 'px'
           width += sliderWidth
         }
-        if(this.loop) {
+        if(this.loop && !isResize) {
           width += 2 * sliderWidth
         }
         this.$refs.sliderGroup.style.width = width + 'px'
+      },
+      _play() {
+        let pageIndex = this.currentIndex + 1
+        if (this.loop) {
+          pageIndex += 1
+        }
+        this.timer = setTimeout(() => {
+          this.slider.goToPage(pageIndex, 0, 400)
+        }, this.interval)
       }
     },
-
+    destroyed() {
+      clearTimeout(this.timer)
+    }
   }
 </script>
 
@@ -89,5 +138,26 @@
   .slider img{
     isplay: block;
     width: 100%
+  }
+  .dots{
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 12px;
+    text-align: center;
+    font-size: 0
+  }
+  .dot{
+    display: inline-block;
+    margin: 0 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fefefe
+  }
+  .active{
+    width: 20px;
+    border-radius: 5px;
+    background: #fff
   }
 </style>

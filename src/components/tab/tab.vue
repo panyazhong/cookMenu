@@ -3,8 +3,8 @@
     <router-link to="recommend">
       推荐
     </router-link>
-    <router-link to="search">
-      搜索
+    <router-link to="singer">
+      歌手
     </router-link>
     <router-link to="makeMenu">
       制作菜单
